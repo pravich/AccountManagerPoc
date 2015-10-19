@@ -219,8 +219,8 @@ public class UserDirectory {
 		
 		Hashtable<String, String> env = new Hashtable<String, String>();
 		env.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
-		env.put(Context.PROVIDER_URL, Configuration.providerUrl);
-		env.put(Context.SECURITY_AUTHENTICATION, Configuration.securityAuthentication);
+		env.put(Context.PROVIDER_URL, Configuration.dirProviderUrl);
+		env.put(Context.SECURITY_AUTHENTICATION, Configuration.dirSecurityAuthentication);
 		env.put(Context.SECURITY_PRINCIPAL, "uid="+ username + ",ou=user,dc=yggdrasil,dc=com");
 		env.put(Context.SECURITY_CREDENTIALS, password);
 

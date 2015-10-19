@@ -16,17 +16,19 @@ public class UserDirectoryFactory {
 	
 	private static Hashtable<String, String> env;
 	
-	private static boolean initilized = false;
+	private static boolean initialized = false;
 	
 	static{
-		if(!initilized) {
+		if(!initialized) {
 			logger.debug("initilizing UserDirectoryFactory.");
 			env = new Hashtable<String, String>();
 			env.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
-			env.put(Context.PROVIDER_URL, Configuration.providerUrl);
-			env.put(Context.SECURITY_AUTHENTICATION, Configuration.securityAuthentication);
-			env.put(Context.SECURITY_PRINCIPAL, Configuration.securityPrincipal);
-			env.put(Context.SECURITY_CREDENTIALS, Configuration.securityCredential);
+			env.put(Context.PROVIDER_URL, Configuration.dirProviderUrl);
+			env.put(Context.SECURITY_AUTHENTICATION, Configuration.dirSecurityAuthentication);
+			env.put(Context.SECURITY_PRINCIPAL, Configuration.dirSecurityPrincipal);
+			env.put(Context.SECURITY_CREDENTIALS, Configuration.dirSecurityCredential);
+			
+			initialized = true;
 			
 			logger.debug("UserDirectoryFactory is initialized successfully.");
 		}

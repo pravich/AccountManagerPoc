@@ -17,10 +17,15 @@ public class Configuration {
 	// probably in static block cannot refer to any relative path in WebContent.
 	// Then have to use absolute "file system" path. 
 	private static String configFilename = "/home/wiz/logs/config.properties";
-	public static final String providerUrl;
-	public static final String securityAuthentication;
-	public static final String securityPrincipal;
-	public static final String securityCredential;
+	public static final String dirProviderUrl;
+	public static final String dirSecurityAuthentication;
+	public static final String dirSecurityPrincipal;
+	public static final String dirSecurityCredential;
+	public static final String dbJdbcDriver;
+	public static final String dbUrl;
+	public static final String dbUsername;
+	public static final String dbPassword;
+	
 	public static final Hashtable<String, String> properties;
 	
 	static {
@@ -43,10 +48,14 @@ public class Configuration {
 			}
 		}
 			
-		providerUrl = prop.getProperty("server.ldap.providerUrl");
-		securityAuthentication = prop.getProperty("server.ldap.securityAuthentication");
-		securityPrincipal = prop.getProperty("server.ldap.securityPrincipal");
-		securityCredential = prop.getProperty("server.ldap.securityCredential");
+		dirProviderUrl = prop.getProperty("server.ldap.providerUrl");
+		dirSecurityAuthentication = prop.getProperty("server.ldap.securityAuthentication");
+		dirSecurityPrincipal = prop.getProperty("server.ldap.securityPrincipal");
+		dirSecurityCredential = prop.getProperty("server.ldap.securityCredential");
+		dbJdbcDriver = prop.getProperty("server.database.jdbcDriver");
+		dbUrl = prop.getProperty("server.database.url");
+		dbUsername = prop.getProperty("server.database.username");
+		dbPassword = prop.getProperty("server.database.password");
 		
 		properties = new Hashtable<String, String>();
 		Enumeration<?> keys = prop.propertyNames();
