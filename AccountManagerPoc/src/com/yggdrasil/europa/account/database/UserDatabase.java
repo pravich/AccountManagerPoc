@@ -3,6 +3,8 @@ package com.yggdrasil.europa.account.database;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.Calendar;
+import java.util.Date;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -40,26 +42,26 @@ public class UserDatabase {
 		PreparedStatement pstmt = null;
 		
 		String command = "INSERT INTO account ("
-				+ "first_name"
-				+ "last_name"
-				+ "middle_name"
-				+ "title"
-				+ "date_of_birth"
-				+ "gender"
-				+ "citizen_id"
-				+ "citizen_id_type"
-				+ "mobile_number"
-				+ "email"
-				+ "alt_email"
-				+ "postal_address"
-				+ "city"
-				+ "zipcode"
-				+ "country"
-				+ "type"
-				+ "status"
-				+ "dir_role"
-				+ "mtime"
-				+ "ctime"
+				+ "  first_name"
+				+ ", last_name"
+				+ ", middle_name"
+				+ ", title"
+				+ ", date_of_birth"
+				+ ", gender"
+				+ ", citizen_id"
+				+ ", citizen_id_type"
+				+ ", mobile_number"
+				+ ", email"
+				+ ", alt_email"
+				+ ", postal_address"
+				+ ", city"
+				+ ", zipcode"
+				+ ", country"
+				+ ", type"
+				+ ", status"
+				+ ", dir_role"
+				+ ", mtime"
+				+ ", ctime"
 				+ ") "
 				+ "VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, "
 				+ "         ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())";
@@ -87,13 +89,20 @@ public class UserDatabase {
 			pstmt.setString(17, user.status);
 			pstmt.setString(18, user.directoryRole);
 			
+//			Calendar calendar = Calendar.getInstance();
+//			java.sql.Date date = new java.sql.Date(calendar.getTime().getTime());
+//			
+//			pstmt.setDate  ( 19, date);
+//			pstmt.setDate  ( 20, date);
+			
 			pstmt.executeUpdate();
 			
 		} catch(SQLException e) {
-			logger.debug(e.getMessage());
+			logger.error(e.getMessage());
+			return false;
 		}
 		
-		return false;
+		return true;
 	}
 
 }
