@@ -26,7 +26,7 @@ import org.apache.logging.log4j.Logger;
 import com.yggdrasil.europa.account.config.Configuration;
 import com.yggdrasil.europa.account.directory.exceptions.ConnectionException;
 import com.yggdrasil.europa.account.directory.exceptions.InvalidCredentialException;
-import com.yggdrasil.europa.account.directory.model.UserDirectoryEntry;
+import com.yggdrasil.europa.account.directory.model.UserDirectoryEntity;
 
 public class UserDirectory {
 	
@@ -109,9 +109,9 @@ public class UserDirectory {
 		return(role);
 	}
 		
-	public UserDirectoryEntry searchUser(String username) {
+	public UserDirectoryEntity searchUser(String username) {
 		
-		UserDirectoryEntry userEntity = null;
+		UserDirectoryEntity userEntity = null;
 		
 		String base = "ou=user,dc=yggdrasil,dc=com";
 		
@@ -135,7 +135,7 @@ public class UserDirectory {
 //					continue;
 				/************************/
 				
-				userEntity = new UserDirectoryEntry();
+				userEntity = new UserDirectoryEntity();
 				
 				NamingEnumeration<? extends Attribute> ae = attrs.getAll();
 				
@@ -259,7 +259,7 @@ public class UserDirectory {
 		return(success);
 	}
 	
-	public boolean createUser(UserDirectoryEntry user) {
+	public boolean createUser(UserDirectoryEntity user) {
 		
 		try {
 			Attributes attrs = new BasicAttributes(true);
@@ -337,9 +337,9 @@ public class UserDirectory {
 		return(true);
 	}
 	
-	public UserDirectoryEntry modifyUserAttributes(String username, Hashtable<String, String> attributes) {
+	public UserDirectoryEntity modifyUserAttributes(String username, Hashtable<String, String> attributes) {
 		
-		UserDirectoryEntry ue = searchUser(username);
+		UserDirectoryEntity ue = searchUser(username);
 		if(ue == null) {
 			logger.debug("invalid user=" + username);
 			return(null);

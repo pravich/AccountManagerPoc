@@ -3,8 +3,6 @@ package com.yggdrasil.europa.account.database;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.Calendar;
-import java.util.Date;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -99,6 +97,7 @@ public class UserDatabase {
 			
 		} catch(SQLException e) {
 			logger.error(e.getMessage());
+			logger.debug(e, e);
 			return false;
 		}
 		

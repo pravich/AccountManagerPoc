@@ -21,7 +21,8 @@ public class UserDatabaseFactory {
 			try {
 				Class.forName(Configuration.dbJdbcDriver);
 			} catch (Exception e) {
-				logger.fatal(e.getMessage());
+				logger.error(e.getMessage());
+				logger.debug(e,e);
 			}
 			
 			initialized = true;
@@ -38,7 +39,8 @@ public class UserDatabaseFactory {
 														  Configuration.dbPassword);
 			udb = new UserDatabase(conn);
 		} catch (SQLException e) {
-			logger.fatal(e.getMessage());
+			logger.error(e.getMessage());
+			logger.debug(e, e);
 		}
 		logger.debug("a new UserDatabase instant is created.");
 		return(udb);

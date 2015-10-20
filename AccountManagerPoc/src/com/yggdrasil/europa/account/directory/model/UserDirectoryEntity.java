@@ -1,6 +1,6 @@
 package com.yggdrasil.europa.account.directory.model;
 
-public class UserDirectoryEntry {
+public class UserDirectoryEntity {
 	public String username;			// uid
 	public String password;			// userPassword
 	public String email;			// mail
