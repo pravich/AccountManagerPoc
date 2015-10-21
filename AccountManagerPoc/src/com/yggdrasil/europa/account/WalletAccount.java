@@ -5,7 +5,6 @@ import java.util.Date;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.yggdrasil.europa.Main;
 import com.yggdrasil.europa.account.database.UserDatabase;
 import com.yggdrasil.europa.account.database.UserDatabaseFactory;
 import com.yggdrasil.europa.account.database.model.UserDatabaseEntity;
@@ -24,36 +23,34 @@ public class WalletAccount {
 	private int accountId;
 	private String username; 
 	private String email;
-	private String mobileNumber;
+	private String mobile;
+	public String password;			// userPassword
 	
 	// Directory Attributes
 	private String firstname;		// gn, givenName
-	private String lastname;			// sn
-	//public String password;			// userPassword
-	
+	private String lastname;		// sn
 	private String company;			// o, organizationName
-	private String role;				// title
+	private String role;			// title
 	
-	// public String mobile;			// mobile
+	// public String mobile;		// mobile
 	private String homePhone;		// homePhone
 	private String officePhone;		// telephoneNumber
 	private String officeAddress;	// postalAddress
 	private String city;				// l
 	private String zipcode;			// postalCode
-	
 	private String description;		// description
 	
 	
 	// Database Attributes
-//	private String 	firstName;
-//	private String 	lastName;
-	private String 	middleName;
+//	private String 	firstname;
+//	private String 	lastname;
+	private String 	middlename;
 	private String 	title;
 	private Date 	dateOfBirth;
 	private String 	gender;
 	private String 	citizenId;
 	private String 	citizenIdType;
-//	private String 	mobileNumber;
+//	private String 	mobile;
 //	private String 	email;
 	private String 	alternateEmail;
 	private String 	postalAddress;
@@ -74,12 +71,12 @@ public class WalletAccount {
 		return null;
 	}
 	
-	public boolean createWalletAccount(String username, String email, String mobileNumber, String password) {
+	public boolean createWalletAccount() {
 		udir = new UserDirectoryEntity();
 		udir.username = username;
 		udir.password = password;
 		udir.email = email;
-		udir.mobile = mobileNumber;
+		udir.mobile = mobile;
 		
 		udir.firstname = this.firstname;
 		udir.lastname = this.lastname;
@@ -106,15 +103,16 @@ public class WalletAccount {
 			return false;
 		}
 		
-		udb.firstName = this.firstname;
-		udb.lastName = this.lastname;
-		udb.middleName = this.middleName;
+		udb = new UserDatabaseEntity();
+		udb.firstname = this.firstname;
+		udb.lastname = this.lastname;
+		udb.middlename = this.middlename;
 		udb.title = this.title;
 		udb.dateOfBirth = this.dateOfBirth;
 		udb.gender = this.gender;
 		udb.citizenId = this.citizenId;
 		udb.citizenIdType = this.citizenIdType;
-		udb.mobileNumber = this.mobileNumber;
+		udb.mobile = this.mobile;
 		udb.email = this.email;
 		udb.alternateEmail = this.alternateEmail;
 		udb.postalAddress = this.postalAddress;
@@ -126,9 +124,9 @@ public class WalletAccount {
 		
 		UserDatabase db = UserDatabaseFactory.getUserDatabase();
 		if(!db.CreateUser(udb)) {
+			ud.deleteUser(username);
 			return(false);
 		}
-		
 		
 		return true;
 	}
@@ -136,6 +134,14 @@ public class WalletAccount {
 	public boolean changeCapSet() {
 		// verify session token and role
 		return false;
+	}
+
+	public String getUsername() {
+		return username;
+	}
+
+	public void setUsername(String username) {
+		this.username = username;
 	}
 
 	public String getEmail() {
@@ -147,11 +153,11 @@ public class WalletAccount {
 	}
 
 	public String getMobileNumber() {
-		return mobileNumber;
+		return mobile;
 	}
 
 	public void setMobileNumber(String mobileNumber) {
-		this.mobileNumber = mobileNumber;
+		this.mobile = mobileNumber;
 	}
 
 	public String getFirstname() {
@@ -234,12 +240,12 @@ public class WalletAccount {
 		this.description = description;
 	}
 
-	public String getMiddleName() {
-		return middleName;
+	public String getMiddlename() {
+		return middlename;
 	}
 
-	public void setMiddleName(String middleName) {
-		this.middleName = middleName;
+	public void setMiddlename(String middlename) {
+		this.middlename = middlename;
 	}
 
 	public String getTitle() {
@@ -306,6 +312,22 @@ public class WalletAccount {
 		this.country = country;
 	}
 
+	public int getType() {
+		return type;
+	}
+
+	public void setType(int type) {
+		this.type = type;
+	}
+
+	public String getStatus() {
+		return status;
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
+	}
+
 	public String getDirectoryRole() {
 		return directoryRole;
 	}
@@ -314,14 +336,11 @@ public class WalletAccount {
 		this.directoryRole = directoryRole;
 	}
 
-	public Date getCreationDate() {
-		return creationDate;
+	public String getPassword() {
+		return password;
 	}
 
-	public void setCreationDate(Date creationDate) {
-		this.creationDate = creationDate;
+	public void setPassword(String password) {
+		this.password = password;
 	}
-	
-
-
 }

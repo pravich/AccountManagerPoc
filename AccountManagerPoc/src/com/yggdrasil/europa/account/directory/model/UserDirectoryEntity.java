@@ -1,7 +1,8 @@
 package com.yggdrasil.europa.account.directory.model;
 
 public class UserDirectoryEntity {
-	public String username;			// uid
+	public String userId;			// uid - use accountId (integer) as a uid in directory
+	public String username;			// cn
 	public String password;			// userPassword
 	public String email;			// mail
 	

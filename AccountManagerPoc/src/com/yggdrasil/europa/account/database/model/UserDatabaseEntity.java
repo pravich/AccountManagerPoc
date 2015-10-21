@@ -4,16 +4,16 @@ import java.util.Date;
 
 public class UserDatabaseEntity {
 	// Account Attributes
-	public int 		AccountId; // aid
-	public String 	firstName;
-	public String 	lastName;
-	public String 	middleName;
+	public int 		accountId; // aid
+	public String 	firstname;
+	public String 	lastname;
+	public String 	middlename;
 	public String 	title;
 	public Date 	dateOfBirth;
 	public String 	gender;
 	public String 	citizenId;
 	public String 	citizenIdType;
-	public String 	mobileNumber;
+	public String 	mobile;
 	public String 	email;
 	public String 	alternateEmail;
 	public String 	postalAddress;

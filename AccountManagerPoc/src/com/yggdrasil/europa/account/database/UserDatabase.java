@@ -68,15 +68,15 @@ public class UserDatabase {
 		
 		try {
 			pstmt = conn.prepareStatement(command);
-			pstmt.setString( 1, user.firstName);
-			pstmt.setString( 2, user.lastName);
-			pstmt.setString( 3, user.middleName);
+			pstmt.setString( 1, user.firstname);
+			pstmt.setString( 2, user.lastname);
+			pstmt.setString( 3, user.middlename);
 			pstmt.setString( 4, user.title);
 			pstmt.setDate  ( 5, new java.sql.Date(user.dateOfBirth.getTime()));
 			pstmt.setString( 6, user.gender);
 			pstmt.setString( 7, user.citizenId);
 			pstmt.setString( 8, user.citizenIdType);
-			pstmt.setString( 9, user.mobileNumber);
+			pstmt.setString( 9, user.mobile);
 			pstmt.setString(10, user.email);
 			pstmt.setString(11, user.alternateEmail);
 			pstmt.setString(12, user.postalAddress);

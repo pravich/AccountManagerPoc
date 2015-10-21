@@ -6,38 +6,36 @@ import java.text.SimpleDateFormat;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.yggdrasil.europa.account.database.UserDatabase;
-import com.yggdrasil.europa.account.database.UserDatabaseFactory;
-import com.yggdrasil.europa.account.database.model.UserDatabaseEntity;
+import com.yggdrasil.europa.account.WalletAccount;
 
 public class Main {
 	private static Logger logger = LogManager.getLogger(Main.class);
 
-	public static void main(String[] args) {
-		UserDatabaseEntity udb = new UserDatabaseEntity();
-		udb.firstName = "Test01";
-		udb.lastName  = "xxxxxx";
-		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+	public static void main(String[] args) {	
 		
+		WalletAccount wa = new WalletAccount();
+		wa.setUsername("tuser01");
+		wa.setPassword("tuser01");
+		wa.setFirstname("tuser01");
+		wa.setLastname("lastname01");
+		wa.setEmail("tuser01@yggdrasil.com");
+		wa.setMobileNumber("0811000000");
+		wa.setCitizenId("1234567890123");
+		wa.setCitizenIdType("TH-ID");
+			
 		try {
-			udb.dateOfBirth = dateFormat.parse("1973-11-29");
+			SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+			wa.setDateOfBirth(dateFormat.parse("1970-01-01"));
 		} catch (ParseException e) {
 			logger.error(e.getMessage());
 		}
 		
-		udb.citizenId = "0123456789012";
-		udb.citizenIdType = "TH-ID";
-		udb.mobileNumber = "081-100-0000";
-		udb.email = "test01@yggdrasil.com";
-		udb.type = 1;
-		udb.status = "INIT";
-		
-		UserDatabase db = UserDatabaseFactory.getUserDatabase();
-		
-		if (db.CreateUser(udb)) {
-			logger.debug("create a new user successfully");
+		wa.setType(1);
+		wa.setStatus("INIT");
+		if(wa.createWalletAccount()) {
+			logger.info("create wallet success!");
 		} else {
-			logger.debug("create a new user failed");
+			logger.info("create wallet failed!");
 		}
 	}
 }
