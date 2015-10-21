@@ -5,6 +5,7 @@ import java.util.Date;
 public class UserDatabaseEntity {
 	// Account Attributes
 	public int 		accountId; // aid
+	public String	username;
 	public String 	firstname;
 	public String 	lastname;
 	public String 	middlename;
@@ -20,6 +21,10 @@ public class UserDatabaseEntity {
 	public String 	city;
 	public String 	zipcode;
 	public String 	country;
+	public String 	homePhone;
+	public String 	company;
+	public String 	officeAddress;
+	public String	officePhone;
 	public int 		type;
 	public String 	status;
 	public String 	directoryRole;
