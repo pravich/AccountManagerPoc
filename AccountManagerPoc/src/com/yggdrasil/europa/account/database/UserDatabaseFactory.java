@@ -1,13 +1,10 @@
 package com.yggdrasil.europa.account.database;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.yggdrasil.europa.account.config.Configuration;
+import com.yggdrasil.europa.account.database.exceptions.DatabaseConnectionException;
 
 public class UserDatabaseFactory {
 	private static Logger logger = LogManager.getLogger(UserDatabaseFactory.class);
@@ -16,33 +13,25 @@ public class UserDatabaseFactory {
 	
 	static{
 		if(!initialized) {
-			logger.debug("initilizing UserDirectoryFactory.");
+			logger.debug("initilizing UserDatabaseFactory.");
 			
 			try {
 				Class.forName(Configuration.dbJdbcDriver);
+				initialized = true;
+				logger.debug("UserDatabaseFactory is initialized successfully.");
 			} catch (Exception e) {
 				logger.error(e.getMessage());
 				logger.debug(e,e);
+				initialized = false;
+				logger.debug("UserDatabaseFactory initialization is failed.");
 			}
-			
-			initialized = true;
-			logger.debug("UserDatabaseFactory is initialized successfully.");
 		}
 	}
 
-	public static UserDatabase getUserDatabase() {
+	public static UserDatabase getUserDatabase() throws DatabaseConnectionException {
 		logger.debug("creating a new UserDatabase instant.");
-		UserDatabase udb = null;
-		try {
-			Connection conn = DriverManager.getConnection(Configuration.dbUrl, 
-														  Configuration.dbUsername, 
-														  Configuration.dbPassword);
-			udb = new UserDatabase(conn);
-		} catch (SQLException e) {
-			logger.error(e.getMessage());
-			logger.debug(e, e);
-		}
-		logger.debug("a new UserDatabase instant is created.");
+		UserDatabase udb = new UserDatabase();
+		logger.debug("New UserDatabase instant is created.");
 		return(udb);
 	}
 

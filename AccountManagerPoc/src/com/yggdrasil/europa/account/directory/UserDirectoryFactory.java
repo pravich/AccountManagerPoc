@@ -8,7 +8,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.yggdrasil.europa.account.config.Configuration;
-import com.yggdrasil.europa.account.directory.exceptions.ConnectionException;
+import com.yggdrasil.europa.account.directory.exceptions.DirectoryConnectionException;
 
 public class UserDirectoryFactory {
 	
@@ -34,7 +34,7 @@ public class UserDirectoryFactory {
 		}
 	}
 
-	public static UserDirectory getUserDirectory() throws ConnectionException {
+	public static UserDirectory getUserDirectory() throws DirectoryConnectionException {
 		logger.debug("creating a new UserDirectory instant.");
 		UserDirectory ud = new UserDirectory(env);
 		logger.debug("a new UserDirectory instant is created.");

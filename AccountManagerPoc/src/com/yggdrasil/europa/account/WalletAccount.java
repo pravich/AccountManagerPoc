@@ -5,19 +5,23 @@ import java.util.Date;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.yggdrasil.europa.account.cache.WalletAccountCache;
+import com.yggdrasil.europa.account.cache.WalletAccountCacheItem;
 import com.yggdrasil.europa.account.database.UserDatabase;
 import com.yggdrasil.europa.account.database.UserDatabaseFactory;
+import com.yggdrasil.europa.account.database.exceptions.DatabaseConnectionException;
 import com.yggdrasil.europa.account.database.model.UserDatabaseEntity;
 import com.yggdrasil.europa.account.directory.UserDirectory;
 import com.yggdrasil.europa.account.directory.UserDirectoryFactory;
-import com.yggdrasil.europa.account.directory.exceptions.ConnectionException;
+import com.yggdrasil.europa.account.directory.exceptions.DirectoryConnectionException;
+import com.yggdrasil.europa.account.directory.exceptions.InvalidCredentialException;
 import com.yggdrasil.europa.account.directory.model.UserDirectoryEntity;
 
 public class WalletAccount {
 	private static Logger logger = LogManager.getLogger(WalletAccount.class);
 	
-	private UserDirectoryEntity udir;
-	private UserDatabaseEntity udb;
+	private UserDirectoryEntity udirEntity;
+	private UserDatabaseEntity udbEntity;
 	
 	// Key Attributes
 	private int 	accountId;
@@ -59,74 +63,141 @@ public class WalletAccount {
 	private Date 	modificationDate;
 	private Date 	creationDate;
 	
-	public String signon(String genericId, String password) {
-		// identify what genericId is and convert to username.
-		// if signon success, return session token
-		// if signon success, retrieve account from both directory and database
+	public String signon(String genericId, String password) {		
+		int accountId = -1; 
+		String sessionToken = null;
 		
-		return null;
+		try {
+			UserDatabase udb = UserDatabaseFactory.getUserDatabase();
+			
+			if(isEmail(genericId)) {
+				accountId = udb.getAccountIdByEmail(genericId);
+				logger.debug("signon with email=[" + genericId + "] matches to accountId=[" + accountId + "]");
+			} else if(isMobile(genericId)) {
+				accountId = udb.getAccountIdByMobile(genericId);
+				logger.debug("signon with mobile=[" + genericId + "] matches to accountId=[" + accountId + "]");
+			} else {
+				accountId = udb.getAccountIdByUsername(genericId);
+				logger.debug("signon with username=[" + genericId + "] matches to accountId=[" + accountId + "]");
+			}
+		} catch (DatabaseConnectionException e) {
+			logger.error(e.getMessage());
+			logger.debug(e, e);
+			return null;
+		}
+
+		if(accountId < 0) {
+			return null;
+		}
+		
+		try {
+			String uid = Integer.toString(accountId);
+			
+			if(UserDirectory.signon(uid, password)) {
+				WalletAccountCacheItem cacheItem = new WalletAccountCacheItem();
+				cacheItem.accountId = accountId;
+			
+				UserDirectory udir = UserDirectoryFactory.getUserDirectory();
+				cacheItem.role = udir.getUserRole(uid);
+				udir.close();
+				
+				sessionToken = SessionTokenGenerator.getSessionToken();
+				WalletAccountCache.setSessionToken(sessionToken, cacheItem);
+				
+				logger.debug("accountId=[" + accountId + "] signon success");
+			}
+		} catch (DirectoryConnectionException e) {
+			logger.error(e.getMessage());
+			logger.debug(e, e);
+			return null;			
+		} catch (InvalidCredentialException e) {
+			logger.error(e.getMessage());
+			logger.debug(e, e);
+			return null;			
+		}
+		
+		return sessionToken;
 	}
 	
 	public boolean createWalletAccount() {
-		udb = new UserDatabaseEntity();
-		udb.username = this.username;
-		udb.firstname = this.firstname;
-		udb.lastname = this.lastname;
-		udb.middlename = this.middlename;
-		udb.title = this.title;
-		udb.dateOfBirth = this.dateOfBirth;
-		udb.gender = this.gender;
-		udb.citizenId = this.citizenId;
-		udb.citizenIdType = this.citizenIdType;
-		udb.mobile = this.mobile;
-		udb.email = this.email;
-		udb.alternateEmail = this.alternateEmail;
-		udb.postalAddress = this.postalAddress;
-		udb.city = this.city;
-		udb.zipcode = this.zipcode;
-		udb.country = this.country;
-		udb.homePhone = this.homePhone;
-		udb.company = this.company;
-		udb.officeAddress = this.officeAddress;
-		udb.officePhone = this.officePhone;
-		udb.type = this.type;
-		udb.status = this.status;
-		udb.directoryRole = this.directoryRole;	
+		udbEntity = new UserDatabaseEntity();
+		udbEntity.username = this.username;
+		udbEntity.firstname = this.firstname;
+		udbEntity.lastname = this.lastname;
+		udbEntity.middlename = this.middlename;
+		udbEntity.title = this.title;
+		udbEntity.dateOfBirth = this.dateOfBirth;
+		udbEntity.gender = this.gender;
+		udbEntity.citizenId = this.citizenId;
+		udbEntity.citizenIdType = this.citizenIdType;
+		udbEntity.mobile = this.mobile;
+		udbEntity.email = this.email;
+		udbEntity.alternateEmail = this.alternateEmail;
+		udbEntity.postalAddress = this.postalAddress;
+		udbEntity.city = this.city;
+		udbEntity.zipcode = this.zipcode;
+		udbEntity.country = this.country;
+		udbEntity.homePhone = this.homePhone;
+		udbEntity.company = this.company;
+		udbEntity.officeAddress = this.officeAddress;
+		udbEntity.officePhone = this.officePhone;
+		udbEntity.type = this.type;
+		udbEntity.status = this.status;
+		udbEntity.directoryRole = this.directoryRole;	
 		
-		UserDatabase db = UserDatabaseFactory.getUserDatabase();
-		if(!db.CreateUser(udb)) {
-			return(false);
-		}
-		
-		accountId = udb.accountId;
-		
-		udir = new UserDirectoryEntity();
-		udir.userId = Integer.toString(accountId);
-		udir.username = username;
-		udir.password = password;
-		udir.email = email;
-		
-		udir.firstname = this.firstname;
-		udir.lastname = this.lastname;
-		udir.role = this.role;
-		udir.description = this.description;
-		
-		UserDirectory ud;
+		UserDatabase udb;
 		
 		try {
-			ud = UserDirectoryFactory.getUserDirectory();
-		} catch (ConnectionException e) {
+			udb = UserDatabaseFactory.getUserDatabase();
+		} catch(DatabaseConnectionException e) {
 			logger.error(e.getMessage());
 			logger.debug(e, e);
 			return false;
 		}
 		
-		if(!ud.createUser(udir)) {
-			
-			// delete user from database
+		accountId = udb.createUser(udbEntity);
+		
+		if(accountId <= 0) {
+			logger.debug("create a new user in database failed.");
+			return(false);
+		} else {
+			logger.debug("create a new user in database success");
+		}
+		
+		udirEntity = new UserDirectoryEntity();
+		udirEntity.userId = Integer.toString(accountId);
+		udirEntity.username = username;
+		udirEntity.password = password;
+		udirEntity.email = email;
+		
+		udirEntity.firstname = this.firstname;
+		udirEntity.lastname = this.lastname;
+		udirEntity.role = this.role;
+		udirEntity.description = this.description;
+		
+		UserDirectory udir;
+		
+		try {
+			udir = UserDirectoryFactory.getUserDirectory();
+		} catch (DirectoryConnectionException e) {
+			logger.error(e.getMessage());
+			logger.debug(e, e);
 			return false;
 		}
 		
+		if(!udir.createUser(udirEntity)) {
+			// delete user from database
+			//logger.debug("remove account[" + accountId + "] from database due to user creation failure in directory.");
+			//udb.deleteUser(accountId);
+			
+			logger.debug("rollback account[" + accountId + "] due to user creation failure in directory.");
+			udb.rollback();
+			return false;
+		}
+		
+		// Commit pending user creation in database
+		udb.commit();
+		udb.close();
 		return true;
 	}
 	
@@ -134,23 +205,30 @@ public class WalletAccount {
 		// verify session token and role
 		return false;
 	}
-	
-	protected boolean verifyEmailFormat(String email) {
-		int atSignPosition = email.indexOf('@');
+
+	protected boolean isEmail(String genericId) {
+		int atSignPosition = genericId.indexOf('@');
 		
-		// if '@' at 1st or last position or no '@', return false.
-		if (atSignPosition <= 0 || atSignPosition == (email.length() - 1)) {
+		if(atSignPosition > 0) {
+			return true;
+		} else {
 			return false;
 		}
-		
-		// if there are '@' more than one, return false.
-		if(email.substring(atSignPosition).indexOf('@') >= 0) {
-			return false;
+	}
+	
+	protected boolean isMobile(String genericId) {
+		char[] chMobile = genericId.toCharArray();
+		for(int i = 0; i < chMobile.length; i++) {
+			if(!((chMobile[i] >= '0') && (chMobile[i] <= '9'))) {
+				return false;
+			}
 		}
 		
 		return true;
 	}
-
+	
+	/************************************************************************/
+	
 	public String getUsername() {
 		return username;
 	}

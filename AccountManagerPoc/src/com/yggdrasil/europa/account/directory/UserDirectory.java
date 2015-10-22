@@ -24,7 +24,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.yggdrasil.europa.account.config.Configuration;
-import com.yggdrasil.europa.account.directory.exceptions.ConnectionException;
+import com.yggdrasil.europa.account.directory.exceptions.DirectoryConnectionException;
 import com.yggdrasil.europa.account.directory.exceptions.InvalidCredentialException;
 import com.yggdrasil.europa.account.directory.model.UserDirectoryEntity;
 
@@ -34,14 +34,14 @@ public class UserDirectory {
 	
 	private static Logger logger = LogManager.getLogger(UserDirectory.class);
 	
-	UserDirectory(Hashtable<String, String> env) throws ConnectionException {
+	UserDirectory(Hashtable<String, String> env) throws DirectoryConnectionException {
 		try {
 			dirctx = new InitialDirContext(env);
 		} catch(CommunicationException excp){
 			logger.error(excp.toString());
 			logger.debug(excp, excp);
 			
-			throw new ConnectionException("InitialDirContext fail due to ConnectionException", excp.getCause());
+			throw new DirectoryConnectionException("InitialDirContext failed due to ConnectionException", excp.getCause());
 		} catch(NamingException excp) {
 			logger.error(excp.toString());
 			logger.debug(excp, excp);
@@ -53,6 +53,7 @@ public class UserDirectory {
 		try {
 			if(dirctx != null) {
 				dirctx.close();
+				dirctx = null;
 			}
 		} catch(NamingException excp) {
 			logger.error(excp.toString());
@@ -216,7 +217,7 @@ public class UserDirectory {
 		return(usernameList);
 	}
 	
-	public static boolean signon(String userId, String password) throws ConnectionException, InvalidCredentialException {
+	public static boolean signon(String userId, String password) throws DirectoryConnectionException, InvalidCredentialException {
 		
 		Hashtable<String, String> env = new Hashtable<String, String>();
 		env.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
@@ -233,18 +234,19 @@ public class UserDirectory {
 			dc = new InitialDirContext(env);
 			success = true;
 			
-			logger.debug("user=" + userId + " sign on succeeds");
+			logger.debug("uid=[" + userId + "] sign on succeeds");
 		} catch(CommunicationException excp) {
 			logger.error( excp.getCause());
 			logger.debug(excp, excp);
 			
-			throw new ConnectionException("InitialDirContext fail due to ConnectionException", excp.getCause());
+			throw new DirectoryConnectionException("InitialDirContext fail due to ConnectionException", excp.getCause());
 		} catch(AuthenticationException excp) {
+			logger.error( excp.getCause());
 			logger.debug("user=" + userId + " sign on fails");
 			
 			throw new InvalidCredentialException("invalid username or password.");
 		} catch(NamingException excp) {
-			logger.error( excp.toString());
+			logger.error( excp.getCause());
 			logger.debug(excp, excp);
 		}
 		
@@ -310,7 +312,7 @@ public class UserDirectory {
 			
 			dirctx.bind(dn, dirctx, attrs);
 			
-			logger.debug("user[" + user.userId + "] successfully created.");
+			logger.debug("uid[" + user.userId + "] successfully created.");
 		} catch(NamingException excp) {
 			logger.error(excp.toString());
 			logger.debug(excp, excp);
@@ -515,7 +517,7 @@ public class UserDirectory {
 		return(searchUser(userId));
 	}
 	
-	public boolean changePassword(String userId, String oldPassword, String newPassword) throws ConnectionException, InvalidCredentialException {
+	public boolean changePassword(String userId, String oldPassword, String newPassword) throws DirectoryConnectionException, InvalidCredentialException {
 		if(signon(userId, oldPassword)) {
 			ModificationItem[] mods = new ModificationItem[1];
 			Attribute modPassword = new BasicAttribute("userPassword", newPassword);
