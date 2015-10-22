@@ -1,7 +1,5 @@
 package com.yggdrasil.europa.account;
 
-import java.util.Date;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -16,54 +14,12 @@ import com.yggdrasil.europa.account.directory.UserDirectoryFactory;
 import com.yggdrasil.europa.account.directory.exceptions.DirectoryConnectionException;
 import com.yggdrasil.europa.account.directory.exceptions.InvalidCredentialException;
 import com.yggdrasil.europa.account.directory.model.UserDirectoryEntity;
+import com.yggdrasil.europa.account.model.WalletAccountEntity;
 
 public class WalletAccount {
 	private static Logger logger = LogManager.getLogger(WalletAccount.class);
 	
-	private UserDirectoryEntity udirEntity;
-	private UserDatabaseEntity udbEntity;
-	
-	// Key Attributes
-	private int 	accountId;
-	private String 	username; 
-	private String 	email;
-	private String 	mobile;
-	public String 	password;		// userPassword
-	
-	// Directory Attributes
-	private String 	firstname;		// gn, givenName
-	private String 	lastname;		// sn
-	private String 	role;			// title
-	private String 	description;	// description
-	
-	
-	// Database Attributes
-//	private String 	firstname;
-//	private String 	lastname;
-	private String 	middlename;
-	private String 	title;
-	private Date 	dateOfBirth;
-	private String 	gender;
-	private String 	citizenId;
-	private String 	citizenIdType;
-//	private String 	mobile;
-//	private String 	email;
-	private String 	alternateEmail;
-	private String 	postalAddress;
-	private String 	city;
-	private String 	zipcode;
-	private String 	country;
-	private String 	homePhone;
-	private String 	company;
-	private String 	officeAddress;
-	private String 	officePhone;
-	private int 	type;
-	private String 	status;
-	private String 	directoryRole;
-	private Date 	modificationDate;
-	private Date 	creationDate;
-	
-	public String signon(String genericId, String password) {		
+	public static String signon(String genericId, String password) {		
 		int accountId = -1; 
 		String sessionToken = null;
 		
@@ -119,61 +75,66 @@ public class WalletAccount {
 		return sessionToken;
 	}
 	
-	public boolean createWalletAccount() {
+	public boolean createWalletAccount(WalletAccountEntity waEntity) {
+		UserDatabaseEntity udbEntity;
+		
 		udbEntity = new UserDatabaseEntity();
-		udbEntity.username = this.username;
-		udbEntity.firstname = this.firstname;
-		udbEntity.lastname = this.lastname;
-		udbEntity.middlename = this.middlename;
-		udbEntity.title = this.title;
-		udbEntity.dateOfBirth = this.dateOfBirth;
-		udbEntity.gender = this.gender;
-		udbEntity.citizenId = this.citizenId;
-		udbEntity.citizenIdType = this.citizenIdType;
-		udbEntity.mobile = this.mobile;
-		udbEntity.email = this.email;
-		udbEntity.alternateEmail = this.alternateEmail;
-		udbEntity.postalAddress = this.postalAddress;
-		udbEntity.city = this.city;
-		udbEntity.zipcode = this.zipcode;
-		udbEntity.country = this.country;
-		udbEntity.homePhone = this.homePhone;
-		udbEntity.company = this.company;
-		udbEntity.officeAddress = this.officeAddress;
-		udbEntity.officePhone = this.officePhone;
-		udbEntity.type = this.type;
-		udbEntity.status = this.status;
-		udbEntity.directoryRole = this.directoryRole;	
+		
+		udbEntity.username = waEntity.username;
+		udbEntity.firstname = waEntity.firstname;
+		udbEntity.lastname = waEntity.lastname;
+		udbEntity.middlename = waEntity.middlename;
+		udbEntity.title = waEntity.title;
+		udbEntity.dateOfBirth = waEntity.dateOfBirth;
+		udbEntity.gender = waEntity.gender;
+		udbEntity.citizenId = waEntity.citizenId;
+		udbEntity.citizenIdType = waEntity.citizenIdType;
+		udbEntity.mobile = waEntity.mobile;
+		udbEntity.email = waEntity.email;
+		udbEntity.alternateEmail = waEntity.alternateEmail;
+		udbEntity.postalAddress = waEntity.postalAddress;
+		udbEntity.city = waEntity.city;
+		udbEntity.zipcode = waEntity.zipcode;
+		udbEntity.country = waEntity.country;
+		udbEntity.homePhone = waEntity.homePhone;
+		udbEntity.company = waEntity.company;
+		udbEntity.officeAddress = waEntity.officeAddress;
+		udbEntity.officePhone = waEntity.officePhone;
+		udbEntity.type = waEntity.type;
+		udbEntity.status = waEntity.status;
+		udbEntity.directoryRole = waEntity.directoryRole;	
 		
 		UserDatabase udb;
 		
 		try {
 			udb = UserDatabaseFactory.getUserDatabase();
+			
+			waEntity.accountId = udb.createUser(udbEntity);
+			
+			if(waEntity.accountId <= 0) {
+				logger.debug("create a new user in database failed.");
+				return(false);
+			} else {
+				logger.debug("create a new user in database success");
+			}
 		} catch(DatabaseConnectionException e) {
 			logger.error(e.getMessage());
 			logger.debug(e, e);
 			return false;
 		}
 		
-		accountId = udb.createUser(udbEntity);
-		
-		if(accountId <= 0) {
-			logger.debug("create a new user in database failed.");
-			return(false);
-		} else {
-			logger.debug("create a new user in database success");
-		}
+		UserDirectoryEntity udirEntity;
 		
 		udirEntity = new UserDirectoryEntity();
-		udirEntity.userId = Integer.toString(accountId);
-		udirEntity.username = username;
-		udirEntity.password = password;
-		udirEntity.email = email;
+		udirEntity.userId = Integer.toString(waEntity.accountId);
+		udirEntity.username = waEntity.username;
+		udirEntity.password = waEntity.password;
+		udirEntity.email = waEntity.email;
 		
-		udirEntity.firstname = this.firstname;
-		udirEntity.lastname = this.lastname;
-		udirEntity.role = this.role;
-		udirEntity.description = this.description;
+		udirEntity.firstname = waEntity.firstname;
+		udirEntity.lastname = waEntity.lastname;
+		udirEntity.role = waEntity.role;
+		udirEntity.description = waEntity.description;
 		
 		UserDirectory udir;
 		
@@ -190,7 +151,7 @@ public class WalletAccount {
 			//logger.debug("remove account[" + accountId + "] from database due to user creation failure in directory.");
 			//udb.deleteUser(accountId);
 			
-			logger.debug("rollback account[" + accountId + "] due to user creation failure in directory.");
+			logger.debug("rollback account[" + waEntity.accountId + "] due to user creation failure in directory.");
 			udb.rollback();
 			return false;
 		}
@@ -206,7 +167,7 @@ public class WalletAccount {
 		return false;
 	}
 
-	protected boolean isEmail(String genericId) {
+	private static boolean isEmail(String genericId) {
 		int atSignPosition = genericId.indexOf('@');
 		
 		if(atSignPosition > 0) {
@@ -216,7 +177,7 @@ public class WalletAccount {
 		}
 	}
 	
-	protected boolean isMobile(String genericId) {
+	private static boolean isMobile(String genericId) {
 		char[] chMobile = genericId.toCharArray();
 		for(int i = 0; i < chMobile.length; i++) {
 			if(!((chMobile[i] >= '0') && (chMobile[i] <= '9'))) {
@@ -225,215 +186,5 @@ public class WalletAccount {
 		}
 		
 		return true;
-	}
-	
-	/************************************************************************/
-	
-	public String getUsername() {
-		return username;
-	}
-
-	public void setUsername(String username) {
-		this.username = username;
-	}
-
-	public String getEmail() {
-		return email;
-	}
-
-	public void setEmail(String email) {
-		this.email = email;
-	}
-
-	public String getMobile() {
-		return mobile;
-	}
-
-	public void setMobile(String mobile) {
-		this.mobile = mobile;
-	}
-
-	public String getPassword() {
-		return password;
-	}
-
-	public void setPassword(String password) {
-		this.password = password;
-	}
-
-	public String getFirstname() {
-		return firstname;
-	}
-
-	public void setFirstname(String firstname) {
-		this.firstname = firstname;
-	}
-
-	public String getLastname() {
-		return lastname;
-	}
-
-	public void setLastname(String lastname) {
-		this.lastname = lastname;
-	}
-
-	public String getRole() {
-		return role;
-	}
-
-	public void setRole(String role) {
-		this.role = role;
-	}
-
-	public String getDescription() {
-		return description;
-	}
-
-	public void setDescription(String description) {
-		this.description = description;
-	}
-
-	public String getMiddlename() {
-		return middlename;
-	}
-
-	public void setMiddlename(String middlename) {
-		this.middlename = middlename;
-	}
-
-	public String getTitle() {
-		return title;
-	}
-
-	public void setTitle(String title) {
-		this.title = title;
-	}
-
-	public Date getDateOfBirth() {
-		return dateOfBirth;
-	}
-
-	public void setDateOfBirth(Date dateOfBirth) {
-		this.dateOfBirth = dateOfBirth;
-	}
-
-	public String getGender() {
-		return gender;
-	}
-
-	public void setGender(String gender) {
-		this.gender = gender;
-	}
-
-	public String getCitizenId() {
-		return citizenId;
-	}
-
-	public void setCitizenId(String citizenId) {
-		this.citizenId = citizenId;
-	}
-
-	public String getCitizenIdType() {
-		return citizenIdType;
-	}
-
-	public void setCitizenIdType(String citizenIdType) {
-		this.citizenIdType = citizenIdType;
-	}
-
-	public String getAlternateEmail() {
-		return alternateEmail;
-	}
-
-	public void setAlternateEmail(String alternateEmail) {
-		this.alternateEmail = alternateEmail;
-	}
-
-	public String getPostalAddress() {
-		return postalAddress;
-	}
-
-	public void setPostalAddress(String postalAddress) {
-		this.postalAddress = postalAddress;
-	}
-
-	public String getCity() {
-		return city;
-	}
-
-	public void setCity(String city) {
-		this.city = city;
-	}
-
-	public String getZipcode() {
-		return zipcode;
-	}
-
-	public void setZipcode(String zipcode) {
-		this.zipcode = zipcode;
-	}
-
-	public String getCountry() {
-		return country;
-	}
-
-	public void setCountry(String country) {
-		this.country = country;
-	}
-
-	public String getHomePhone() {
-		return homePhone;
-	}
-
-	public void setHomePhone(String homePhone) {
-		this.homePhone = homePhone;
-	}
-
-	public String getCompany() {
-		return company;
-	}
-
-	public void setCompany(String company) {
-		this.company = company;
-	}
-
-	public String getOfficePhone() {
-		return officePhone;
-	}
-
-	public void setOfficePhone(String officePhone) {
-		this.officePhone = officePhone;
-	}
-
-	public int getType() {
-		return type;
-	}
-
-	public void setType(int type) {
-		this.type = type;
-	}
-
-	public String getStatus() {
-		return status;
-	}
-
-	public void setStatus(String status) {
-		this.status = status;
-	}
-
-	public String getDirectoryRole() {
-		return directoryRole;
-	}
-
-	public void setDirectoryRole(String directoryRole) {
-		this.directoryRole = directoryRole;
-	}
-
-	public String getOfficeAddress() {
-		return officeAddress;
-	}
-
-	public void setOfficeAddress(String officeAddress) {
-		this.officeAddress = officeAddress;
 	}
 }

@@ -286,16 +286,46 @@ public class UserDatabase {
 	}
 	
 	public boolean updateUserAttribute(int accountId, String attributeName, String attributeValue) {
-		
+		// TBD
 		return false;
 	}
 	
 	public boolean enableUser(int accountId) {
-		return false;
+		String cmdUpdate = "UPDATE account SET status='ACTIVE' WHERE aid=" + accountId + ";";
+		try {
+			Statement stmt = conn.createStatement();
+			int nRow = stmt.executeUpdate(cmdUpdate);
+			if(nRow > 0) {
+				logger.debug("accountId=[" + accountId + "] is active.");
+				return true;
+			} else {
+				logger.debug("cannot enable accountId=[" + accountId + "].");
+				return false;
+			}
+		} catch (SQLException e) {
+			logger.error(e.getMessage());
+			logger.debug(e, e);
+			return false;
+		}
 	}
 	
 	public boolean disableUser(int accountId) {
-		return false;
+		String cmdUpdate = "UPDATE account SET status='DISABLE' WHERE aid=" + accountId + ";";
+		try {
+			Statement stmt = conn.createStatement();
+			int nRow = stmt.executeUpdate(cmdUpdate);
+			if(nRow > 0) {
+				logger.debug("accountId=[" + accountId + "] is disable.");
+				return true;
+			} else {
+				logger.debug("cannot disable accountId=[" + accountId + "].");
+				return false;
+			}
+		} catch (SQLException e) {
+			logger.error(e.getMessage());
+			logger.debug(e, e);
+			return false;
+		}
 	}
 	
 	public boolean verifyEmailFormat(String email) {
