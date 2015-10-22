@@ -20,25 +20,17 @@ public class WalletAccount {
 	private UserDatabaseEntity udb;
 	
 	// Key Attributes
-	private int accountId;
-	private String username; 
-	private String email;
-	private String mobile;
-	public String password;			// userPassword
+	private int 	accountId;
+	private String 	username; 
+	private String 	email;
+	private String 	mobile;
+	public String 	password;		// userPassword
 	
 	// Directory Attributes
-	private String firstname;		// gn, givenName
-	private String lastname;		// sn
-	private String company;			// o, organizationName
-	private String role;			// title
-	
-	// public String mobile;		// mobile
-	private String homePhone;		// homePhone
-	private String officePhone;		// telephoneNumber
-	private String officeAddress;	// postalAddress
-	private String city;				// l
-	private String zipcode;			// postalCode
-	private String description;		// description
+	private String 	firstname;		// gn, givenName
+	private String 	lastname;		// sn
+	private String 	role;			// title
+	private String 	description;	// description
 	
 	
 	// Database Attributes
@@ -54,9 +46,13 @@ public class WalletAccount {
 //	private String 	email;
 	private String 	alternateEmail;
 	private String 	postalAddress;
-//	private String 	city;
-//	private String 	zipcode;
+	private String 	city;
+	private String 	zipcode;
 	private String 	country;
+	private String 	homePhone;
+	private String 	company;
+	private String 	officeAddress;
+	private String 	officePhone;
 	private int 	type;
 	private String 	status;
 	private String 	directoryRole;
@@ -72,38 +68,8 @@ public class WalletAccount {
 	}
 	
 	public boolean createWalletAccount() {
-		udir = new UserDirectoryEntity();
-		udir.username = username;
-		udir.password = password;
-		udir.email = email;
-		udir.mobile = mobile;
-		
-		udir.firstname = this.firstname;
-		udir.lastname = this.lastname;
-		udir.company = this.company;
-		udir.role = this.role;
-		udir.homePhone = this.homePhone;
-		udir.officePhone = this.officePhone;
-		udir.officeAddress = this.officeAddress;
-		udir.city = this.city;
-		udir.zipcode = this.zipcode;
-		udir.description = this.description;
-		
-		UserDirectory ud;
-		
-		try {
-			ud = UserDirectoryFactory.getUserDirectory();
-		} catch (ConnectionException e) {
-			logger.error(e.getMessage());
-			logger.debug(e, e);
-			return false;
-		}
-		
-		if(!ud.createUser(udir)) {
-			return false;
-		}
-		
 		udb = new UserDatabaseEntity();
+		udb.username = this.username;
 		udb.firstname = this.firstname;
 		udb.lastname = this.lastname;
 		udb.middlename = this.middlename;
@@ -119,13 +85,46 @@ public class WalletAccount {
 		udb.city = this.city;
 		udb.zipcode = this.zipcode;
 		udb.country = this.country;
+		udb.homePhone = this.homePhone;
+		udb.company = this.company;
+		udb.officeAddress = this.officeAddress;
+		udb.officePhone = this.officePhone;
 		udb.type = this.type;
 		udb.status = this.status;
+		udb.directoryRole = this.directoryRole;	
 		
 		UserDatabase db = UserDatabaseFactory.getUserDatabase();
 		if(!db.CreateUser(udb)) {
-			ud.deleteUser(username);
 			return(false);
+		}
+		
+		accountId = udb.accountId;
+		
+		udir = new UserDirectoryEntity();
+		udir.userId = Integer.toString(accountId);
+		udir.username = username;
+		udir.password = password;
+		udir.email = email;
+		
+		udir.firstname = this.firstname;
+		udir.lastname = this.lastname;
+		udir.role = this.role;
+		udir.description = this.description;
+		
+		UserDirectory ud;
+		
+		try {
+			ud = UserDirectoryFactory.getUserDirectory();
+		} catch (ConnectionException e) {
+			logger.error(e.getMessage());
+			logger.debug(e, e);
+			return false;
+		}
+		
+		if(!ud.createUser(udir)) {
+			
+			// delete user from database
+			return false;
 		}
 		
 		return true;
@@ -134,6 +133,22 @@ public class WalletAccount {
 	public boolean changeCapSet() {
 		// verify session token and role
 		return false;
+	}
+	
+	protected boolean verifyEmailFormat(String email) {
+		int atSignPosition = email.indexOf('@');
+		
+		// if '@' at 1st or last position or no '@', return false.
+		if (atSignPosition <= 0 || atSignPosition == (email.length() - 1)) {
+			return false;
+		}
+		
+		// if there are '@' more than one, return false.
+		if(email.substring(atSignPosition).indexOf('@') >= 0) {
+			return false;
+		}
+		
+		return true;
 	}
 
 	public String getUsername() {
@@ -152,12 +167,20 @@ public class WalletAccount {
 		this.email = email;
 	}
 
-	public String getMobileNumber() {
+	public String getMobile() {
 		return mobile;
 	}
 
-	public void setMobileNumber(String mobileNumber) {
-		this.mobile = mobileNumber;
+	public void setMobile(String mobile) {
+		this.mobile = mobile;
+	}
+
+	public String getPassword() {
+		return password;
+	}
+
+	public void setPassword(String password) {
+		this.password = password;
 	}
 
 	public String getFirstname() {
@@ -176,60 +199,12 @@ public class WalletAccount {
 		this.lastname = lastname;
 	}
 
-	public String getCompany() {
-		return company;
-	}
-
-	public void setCompany(String company) {
-		this.company = company;
-	}
-
 	public String getRole() {
 		return role;
 	}
 
 	public void setRole(String role) {
 		this.role = role;
-	}
-
-	public String getHomePhone() {
-		return homePhone;
-	}
-
-	public void setHomePhone(String homePhone) {
-		this.homePhone = homePhone;
-	}
-
-	public String getOfficePhone() {
-		return officePhone;
-	}
-
-	public void setOfficePhone(String officePhone) {
-		this.officePhone = officePhone;
-	}
-
-	public String getOfficeAddress() {
-		return officeAddress;
-	}
-
-	public void setOfficeAddress(String officeAddress) {
-		this.officeAddress = officeAddress;
-	}
-
-	public String getCity() {
-		return city;
-	}
-
-	public void setCity(String city) {
-		this.city = city;
-	}
-
-	public String getZipcode() {
-		return zipcode;
-	}
-
-	public void setZipcode(String zipcode) {
-		this.zipcode = zipcode;
 	}
 
 	public String getDescription() {
@@ -304,12 +279,52 @@ public class WalletAccount {
 		this.postalAddress = postalAddress;
 	}
 
+	public String getCity() {
+		return city;
+	}
+
+	public void setCity(String city) {
+		this.city = city;
+	}
+
+	public String getZipcode() {
+		return zipcode;
+	}
+
+	public void setZipcode(String zipcode) {
+		this.zipcode = zipcode;
+	}
+
 	public String getCountry() {
 		return country;
 	}
 
 	public void setCountry(String country) {
 		this.country = country;
+	}
+
+	public String getHomePhone() {
+		return homePhone;
+	}
+
+	public void setHomePhone(String homePhone) {
+		this.homePhone = homePhone;
+	}
+
+	public String getCompany() {
+		return company;
+	}
+
+	public void setCompany(String company) {
+		this.company = company;
+	}
+
+	public String getOfficePhone() {
+		return officePhone;
+	}
+
+	public void setOfficePhone(String officePhone) {
+		this.officePhone = officePhone;
 	}
 
 	public int getType() {
@@ -336,11 +351,11 @@ public class WalletAccount {
 		this.directoryRole = directoryRole;
 	}
 
-	public String getPassword() {
-		return password;
+	public String getOfficeAddress() {
+		return officeAddress;
 	}
 
-	public void setPassword(String password) {
-		this.password = password;
+	public void setOfficeAddress(String officeAddress) {
+		this.officeAddress = officeAddress;
 	}
 }

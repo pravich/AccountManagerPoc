@@ -14,12 +14,12 @@ public class Main {
 	public static void main(String[] args) {	
 		
 		WalletAccount wa = new WalletAccount();
-		wa.setUsername("tuser01");
-		wa.setPassword("tuser01");
-		wa.setFirstname("tuser01");
-		wa.setLastname("lastname01");
-		wa.setEmail("tuser01@yggdrasil.com");
-		wa.setMobileNumber("0811000000");
+		wa.setUsername("tuser06");
+		wa.setPassword("tuser06");
+		wa.setFirstname("tuser06");
+		wa.setLastname("lastname06");
+		wa.setEmail("tuser06@yggdrasil.com");
+		wa.setMobile("0811000006");
 		wa.setCitizenId("1234567890123");
 		wa.setCitizenIdType("TH-ID");
 			

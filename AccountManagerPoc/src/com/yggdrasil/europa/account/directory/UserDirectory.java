@@ -76,11 +76,11 @@ public class UserDirectory {
 		}
 	}
 	
-	public String getUserRole(String username) {
+	public String getUserRole(String userId) {
 		String base = "ou=user,dc=yggdrasil,dc=com";
 		SearchControls sc = new SearchControls();
 		sc.setSearchScope(SearchControls.ONELEVEL_SCOPE);
-		String filter = "(&(uid=" + username + "))";
+		String filter = "(&(uid=" + userId + "))";
 		
 		String uid = null;
 		String role = null;
@@ -96,7 +96,7 @@ public class UserDirectory {
 				
 				uid = attrs.get("uid").get().toString();
 
-				if(uid.equals(username) && (attrs.get("title") != null)) {
+				if(uid.equals(userId) && (attrs.get("title") != null)) {
 					role = attrs.get("title").get().toString();
 
 				}  
@@ -109,7 +109,7 @@ public class UserDirectory {
 		return(role);
 	}
 		
-	public UserDirectoryEntity searchUser(String username) {
+	public UserDirectoryEntity searchUser(String userId) {
 		
 		UserDirectoryEntity userEntity = null;
 		
@@ -119,8 +119,8 @@ public class UserDirectory {
 			SearchControls sc = new SearchControls();
 			sc.setSearchScope(SearchControls.SUBTREE_SCOPE);
 			
-			//String filter = "(&(objectClass=person)(uid=" + username + "))";
-			String filter = "(&(uid=" + username + "))";
+			//String filter = "(&(objectClass=person)(uid=" + userId + "))";
+			String filter = "(&(uid=" + userId + "))";
 			NamingEnumeration<SearchResult> results = dirctx.search(base, filter, sc);
 			
 			//while(results.hasMore()) {
@@ -149,7 +149,8 @@ public class UserDirectory {
 						String value = values.next().toString();
 						logger.debug("name=" + name + ", value=" + value);
 						switch(name) {
-							case "uid": userEntity.username = value; break;
+							case "uid": userEntity.userId = value; break;
+							case "cn": userEntity.username = value; break;
 							case "userPassword": userEntity.password = value; break;
 							case "mail": userEntity.email = value; break;
 							case "gn": 
@@ -157,15 +158,15 @@ public class UserDirectory {
 							case "sn": userEntity.lastname = value; break;
 							
 							case "organizationname": 
-							case "o" : userEntity.company = value; break;
+							//case "o" : userEntity.company = value; break;
 							case "title": userEntity.role = value; break;
 							
-							case "mobile": userEntity.mobile = value; break;
-							case "homePhone": userEntity.homePhone = value; break;
-							case "telephoneNumber": userEntity.officePhone = value; break;
-							case "postalAddress": userEntity.officeAddress = value; break;
-							case "l": userEntity.city = value; break;
-							case "postalCode": userEntity.zipcode = value; break;
+							//case "mobile": userEntity.mobile = value; break;
+							//case "homePhone": userEntity.homePhone = value; break;
+							//case "telephoneNumber": userEntity.officePhone = value; break;
+							//case "postalAddress": userEntity.officeAddress = value; break;
+							//case "l": userEntity.city = value; break;
+							//case "postalCode": userEntity.zipcode = value; break;
 							
 							case "description": userEntity.description = value; break;
 						}
@@ -215,13 +216,13 @@ public class UserDirectory {
 		return(usernameList);
 	}
 	
-	public static boolean signon(String username, String password) throws ConnectionException, InvalidCredentialException {
+	public static boolean signon(String userId, String password) throws ConnectionException, InvalidCredentialException {
 		
 		Hashtable<String, String> env = new Hashtable<String, String>();
 		env.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
 		env.put(Context.PROVIDER_URL, Configuration.dirProviderUrl);
 		env.put(Context.SECURITY_AUTHENTICATION, Configuration.dirSecurityAuthentication);
-		env.put(Context.SECURITY_PRINCIPAL, "uid="+ username + ",ou=user,dc=yggdrasil,dc=com");
+		env.put(Context.SECURITY_PRINCIPAL, "uid="+ userId + ",ou=user,dc=yggdrasil,dc=com");
 		env.put(Context.SECURITY_CREDENTIALS, password);
 
 		DirContext dc = null;
@@ -232,14 +233,14 @@ public class UserDirectory {
 			dc = new InitialDirContext(env);
 			success = true;
 			
-			logger.debug("user=" + username + " sign on succeeds");
+			logger.debug("user=" + userId + " sign on succeeds");
 		} catch(CommunicationException excp) {
 			logger.error( excp.getCause());
 			logger.debug(excp, excp);
 			
 			throw new ConnectionException("InitialDirContext fail due to ConnectionException", excp.getCause());
 		} catch(AuthenticationException excp) {
-			logger.debug("user=" + username + " sign on fails");
+			logger.debug("user=" + userId + " sign on fails");
 			
 			throw new InvalidCredentialException("invalid username or password.");
 		} catch(NamingException excp) {
@@ -270,7 +271,7 @@ public class UserDirectory {
 			attrs.put(new BasicAttribute("objectClass", "organizationUnit"));
 			attrs.put(new BasicAttribute("objectClass", "inetOrgPerson"));
 			// Mandatory attributes
-			attrs.put( new BasicAttribute("uid", user.username));
+			attrs.put( new BasicAttribute("uid", user.userId));
 			attrs.put( new BasicAttribute("cn", user.username));
 			attrs.put( new BasicAttribute("userPassword", user.password));			
 			attrs.put( new BasicAttribute("mail", user.email));
@@ -278,38 +279,38 @@ public class UserDirectory {
 			attrs.put( new BasicAttribute("sn", user.lastname));
 			
 			// Option attributes
-			if(user.company != null)
-				attrs.put( new BasicAttribute("organizationName", user.company));
+//			if(user.company != null)
+//				attrs.put( new BasicAttribute("organizationName", user.company));
 			
 			if(user.role != null)
 				attrs.put( new BasicAttribute("title", user.role));
 			
-			if(user.mobile != null)
-				attrs.put( new BasicAttribute("mobile", user.mobile));
+//			if(user.mobile != null)
+//				attrs.put( new BasicAttribute("mobile", user.mobile));
 			
-			if(user.homePhone != null)
-				attrs.put( new BasicAttribute("homephone", user.homePhone));
+//			if(user.homePhone != null)
+//				attrs.put( new BasicAttribute("homephone", user.homePhone));
 			
-			if(user.officePhone != null)
-				attrs.put( new BasicAttribute("telephoneNumber", user.officePhone));
+//			if(user.officePhone != null)
+//				attrs.put( new BasicAttribute("telephoneNumber", user.officePhone));
 			
-			if(user.officeAddress != null)
-				attrs.put( new BasicAttribute("postalAddress", user.officeAddress));
+//			if(user.officeAddress != null)
+//				attrs.put( new BasicAttribute("postalAddress", user.officeAddress));
 			
-			if(user.city != null)
-				attrs.put( new BasicAttribute("l", user.city));
+//			if(user.city != null)
+//				attrs.put( new BasicAttribute("l", user.city));
 
-			if(user.zipcode != null)
-				attrs.put( new BasicAttribute("postalCode", user.zipcode));
+//			if(user.zipcode != null)
+//				attrs.put( new BasicAttribute("postalCode", user.zipcode));
 			
 			if(user.description != null)
 				attrs.put( new BasicAttribute("description", user.description));
 			
-			String dn = "uid=" + user.username + ",ou=user,dc=yggdrasil,dc=com";
+			String dn = "uid=" + user.userId + ",ou=user,dc=yggdrasil,dc=com";
 			
 			dirctx.bind(dn, dirctx, attrs);
 			
-			logger.debug("user[" + user.username + "] successfully created.");
+			logger.debug("user[" + user.userId + "] successfully created.");
 		} catch(NamingException excp) {
 			logger.error(excp.toString());
 			logger.debug(excp, excp);
@@ -322,12 +323,12 @@ public class UserDirectory {
 		return(true);
 	}
 	
-	public boolean deleteUser(String username) {
+	public boolean deleteUser(String userId) {
 		
 		try {
-			dirctx.destroySubcontext("uid=" + username + ",ou=user,dc=yggdrasil,dc=com");
+			dirctx.destroySubcontext("uid=" + userId + ",ou=user,dc=yggdrasil,dc=com");
 			
-			logger.info("delete user=" + username + " successfully");
+			logger.info("delete user=" + userId + " successfully");
 		} catch(Exception excp) {
 			logger.error(excp.toString());
 			logger.debug(excp, excp);
@@ -337,11 +338,11 @@ public class UserDirectory {
 		return(true);
 	}
 	
-	public UserDirectoryEntity modifyUserAttributes(String username, Hashtable<String, String> attributes) {
+	public UserDirectoryEntity modifyUserAttributes(String userId, Hashtable<String, String> attributes) {
 		
-		UserDirectoryEntity ue = searchUser(username);
+		UserDirectoryEntity ue = searchUser(userId);
 		if(ue == null) {
-			logger.debug("invalid user=" + username);
+			logger.debug("invalid user=" + userId);
 			return(null);
 		}
 		
@@ -354,6 +355,17 @@ public class UserDirectory {
 			logger.debug("attribute=" + attr + ", value=" + value);
 			
 			switch(attr) {
+			case "username": 
+				if(ue.username == null) {
+					Attribute modAttr = new BasicAttribute("cn", value);
+					modificationList.add(new ModificationItem(DirContext.ADD_ATTRIBUTE, modAttr));
+					continue;
+				} else if (!ue.username.equals(value)) {
+					Attribute modAttr = new BasicAttribute("cn", value);	
+					modificationList.add(new ModificationItem(DirContext.REPLACE_ATTRIBUTE, modAttr));
+					continue;
+				}
+				break;
 			case "email": 
 				if(ue.email == null) {
 					Attribute modAttr = new BasicAttribute("mail", value);
@@ -387,17 +399,17 @@ public class UserDirectory {
 					continue;
 				}
 				break;	
-			case "company":
-				if(ue.company == null) {
-					Attribute modAttr = new BasicAttribute("organizationName", value);
-					modificationList.add(new ModificationItem(DirContext.ADD_ATTRIBUTE, modAttr));
-					continue;
-				} else if(!ue.company.equals(value)) {
-					Attribute modAttr = new BasicAttribute("organizationName", value);	
-					modificationList.add(new ModificationItem(DirContext.REPLACE_ATTRIBUTE, modAttr));
-					continue;
-				}
-				break;
+//			case "company":
+//				if(ue.company == null) {
+//					Attribute modAttr = new BasicAttribute("organizationName", value);
+//					modificationList.add(new ModificationItem(DirContext.ADD_ATTRIBUTE, modAttr));
+//					continue;
+//				} else if(!ue.company.equals(value)) {
+//					Attribute modAttr = new BasicAttribute("organizationName", value);	
+//					modificationList.add(new ModificationItem(DirContext.REPLACE_ATTRIBUTE, modAttr));
+//					continue;
+//				}
+//				break;
 			case "role":
 				if(ue.role == null) {
 					Attribute modAttr = new BasicAttribute("title", value);
@@ -409,72 +421,72 @@ public class UserDirectory {
 					continue;
 				}
 				break;
-			case "mobile":
-				if(ue.mobile == null) {
-					Attribute modAttr = new BasicAttribute("mobile", value);
-					modificationList.add(new ModificationItem(DirContext.ADD_ATTRIBUTE, modAttr));
-					continue;
-				} else if(!ue.mobile.equals(value)) {
-					Attribute modAttr = new BasicAttribute("mobile", value);	
-					modificationList.add(new ModificationItem(DirContext.REPLACE_ATTRIBUTE, modAttr));
-					continue;
-				}
-				break;
-			case "homePhone":
-				if(ue.homePhone == null) {
-					Attribute modAttr = new BasicAttribute("homePhone", value);
-					modificationList.add(new ModificationItem(DirContext.ADD_ATTRIBUTE, modAttr));
-					continue;
-				} else if(!ue.homePhone.equals(value)) {
-					Attribute modAttr = new BasicAttribute("homePhone", value);	
-					modificationList.add(new ModificationItem(DirContext.REPLACE_ATTRIBUTE, modAttr));
-					continue;
-				}
-				break;
-			case "officePhone":
-				if(ue.officePhone == null) {
-					Attribute modAttr = new BasicAttribute("telephoneNumber", value);
-					modificationList.add(new ModificationItem(DirContext.ADD_ATTRIBUTE, modAttr));
-					continue;
-				} else if(!ue.officePhone.equals(value)) {
-					Attribute modAttr = new BasicAttribute("telephoneNumber", value);	
-					modificationList.add(new ModificationItem(DirContext.REPLACE_ATTRIBUTE, modAttr));
-					continue;
-				}
-				break;
-			case "officeAddress":
-				if(ue.officeAddress == null) {
-					Attribute modAttr = new BasicAttribute("postalAddress", value);
-					modificationList.add(new ModificationItem(DirContext.ADD_ATTRIBUTE, modAttr));
-					continue;
-				} else if(!ue.officeAddress.equals(value)) {
-					Attribute modAttr = new BasicAttribute("postalAddress", value);	
-					modificationList.add(new ModificationItem(DirContext.REPLACE_ATTRIBUTE, modAttr));
-					continue;
-				}
-				break;
-			case "city":
-				if(ue.city == null) {
-					Attribute modAttr = new BasicAttribute("l", value);
-					modificationList.add(new ModificationItem(DirContext.ADD_ATTRIBUTE, modAttr));
-					continue;
-				} else if(!ue.city.equals(value)) {
-					Attribute modAttr = new BasicAttribute("l", value);	
-					modificationList.add(new ModificationItem(DirContext.REPLACE_ATTRIBUTE, modAttr));
-					continue;
-				}
-				break;
-			case "zipcode":
-				if(ue.zipcode == null) {
-					Attribute modAttr = new BasicAttribute("postalCode", value);
-					modificationList.add(new ModificationItem(DirContext.ADD_ATTRIBUTE, modAttr));
-					continue;
-				} else if(!ue.zipcode.equals(value)) {
-					Attribute modAttr = new BasicAttribute("postalCode", value);	
-					modificationList.add(new ModificationItem(DirContext.REPLACE_ATTRIBUTE, modAttr));
-					continue;
-				}
-				break;
+//			case "mobile":
+//				if(ue.mobile == null) {
+//					Attribute modAttr = new BasicAttribute("mobile", value);
+//					modificationList.add(new ModificationItem(DirContext.ADD_ATTRIBUTE, modAttr));
+//					continue;
+//				} else if(!ue.mobile.equals(value)) {
+//					Attribute modAttr = new BasicAttribute("mobile", value);	
+//					modificationList.add(new ModificationItem(DirContext.REPLACE_ATTRIBUTE, modAttr));
+//					continue;
+//				}
+//				break;
+//			case "homePhone":
+//				if(ue.homePhone == null) {
+//					Attribute modAttr = new BasicAttribute("homePhone", value);
+//					modificationList.add(new ModificationItem(DirContext.ADD_ATTRIBUTE, modAttr));
+//					continue;
+//				} else if(!ue.homePhone.equals(value)) {
+//					Attribute modAttr = new BasicAttribute("homePhone", value);	
+//					modificationList.add(new ModificationItem(DirContext.REPLACE_ATTRIBUTE, modAttr));
+//					continue;
+//				}
+//				break;
+//			case "officePhone":
+//				if(ue.officePhone == null) {
+//					Attribute modAttr = new BasicAttribute("telephoneNumber", value);
+//					modificationList.add(new ModificationItem(DirContext.ADD_ATTRIBUTE, modAttr));
+//					continue;
+//				} else if(!ue.officePhone.equals(value)) {
+//					Attribute modAttr = new BasicAttribute("telephoneNumber", value);	
+//					modificationList.add(new ModificationItem(DirContext.REPLACE_ATTRIBUTE, modAttr));
+//					continue;
+//				}
+//				break;
+//			case "officeAddress":
+//				if(ue.officeAddress == null) {
+//					Attribute modAttr = new BasicAttribute("postalAddress", value);
+//					modificationList.add(new ModificationItem(DirContext.ADD_ATTRIBUTE, modAttr));
+//					continue;
+//				} else if(!ue.officeAddress.equals(value)) {
+//					Attribute modAttr = new BasicAttribute("postalAddress", value);	
+//					modificationList.add(new ModificationItem(DirContext.REPLACE_ATTRIBUTE, modAttr));
+//					continue;
+//				}
+//				break;
+//			case "city":
+//				if(ue.city == null) {
+//					Attribute modAttr = new BasicAttribute("l", value);
+//					modificationList.add(new ModificationItem(DirContext.ADD_ATTRIBUTE, modAttr));
+//					continue;
+//				} else if(!ue.city.equals(value)) {
+//					Attribute modAttr = new BasicAttribute("l", value);	
+//					modificationList.add(new ModificationItem(DirContext.REPLACE_ATTRIBUTE, modAttr));
+//					continue;
+//				}
+//				break;
+//			case "zipcode":
+//				if(ue.zipcode == null) {
+//					Attribute modAttr = new BasicAttribute("postalCode", value);
+//					modificationList.add(new ModificationItem(DirContext.ADD_ATTRIBUTE, modAttr));
+//					continue;
+//				} else if(!ue.zipcode.equals(value)) {
+//					Attribute modAttr = new BasicAttribute("postalCode", value);	
+//					modificationList.add(new ModificationItem(DirContext.REPLACE_ATTRIBUTE, modAttr));
+//					continue;
+//				}
+//				break;
 			case "description":
 				if(ue.description == null) {
 					Attribute modAttr = new BasicAttribute("description", value);
@@ -492,7 +504,7 @@ public class UserDirectory {
 		ModificationItem[] mods = modificationList.toArray(new ModificationItem[modificationList.size()]);
 		
 		try {
-			dirctx.modifyAttributes("uid=" + username + ",ou=user,dc=yggdrasil,dc=com", mods);
+			dirctx.modifyAttributes("uid=" + userId + ",ou=user,dc=yggdrasil,dc=com", mods);
 			logger.debug("attribute modification succeeds.");
 		} catch(NamingException excp) {
 			logger.error(excp.toString());
@@ -500,16 +512,16 @@ public class UserDirectory {
 			return(null);
 		}
 
-		return(searchUser(username));
+		return(searchUser(userId));
 	}
 	
-	public boolean changePassword(String username, String oldPassword, String newPassword) throws ConnectionException, InvalidCredentialException {
-		if(signon(username, oldPassword)) {
+	public boolean changePassword(String userId, String oldPassword, String newPassword) throws ConnectionException, InvalidCredentialException {
+		if(signon(userId, oldPassword)) {
 			ModificationItem[] mods = new ModificationItem[1];
 			Attribute modPassword = new BasicAttribute("userPassword", newPassword);
 			mods[0] = new ModificationItem(DirContext.REPLACE_ATTRIBUTE, modPassword);
 			try {
-				dirctx.modifyAttributes("uid=" + username + ",ou=user,dc=yggdrasil,dc=com", mods);
+				dirctx.modifyAttributes("uid=" + userId + ",ou=user,dc=yggdrasil,dc=com", mods);
 				logger.debug("password is changed successfully.");
 			} catch(NamingException excp) {
 				logger.error(excp.toString());
@@ -523,19 +535,19 @@ public class UserDirectory {
 		}
 	}
 	
-	public boolean deleteUserAttribute(String username, String attribute) {
+	public boolean deleteUserAttribute(String userId, String attribute) {
 		String ldapAttrName = null;
 		switch(attribute) {
 		case "firstname"     : ldapAttrName = "gn"; break;
 		case "lastname"      : ldapAttrName = "sn"; break;
-		case "company"       : ldapAttrName = "o"; break;
+//		case "company"       : ldapAttrName = "o"; break;
 		case "role"          : ldapAttrName = "title"; break;
-		case "mobile"        : ldapAttrName = "mobile"; break;
-		case "homePhone"     : ldapAttrName = "homePhone"; break;
-		case "officePhone"   : ldapAttrName = "telephoneNumber"; break;
-		case "officeAddress" : ldapAttrName = "postalAddress"; break;
-		case "city"          : ldapAttrName = "l"; break;
-		case "zipcode"       : ldapAttrName = "postalCode"; break;
+//		case "mobile"        : ldapAttrName = "mobile"; break;
+//		case "homePhone"     : ldapAttrName = "homePhone"; break;
+//		case "officePhone"   : ldapAttrName = "telephoneNumber"; break;
+//		case "officeAddress" : ldapAttrName = "postalAddress"; break;
+//		case "city"          : ldapAttrName = "l"; break;
+//		case "zipcode"       : ldapAttrName = "postalCode"; break;
 		case "description"   : ldapAttrName = "description"; break;
 		default: 
 			logger.debug("invalid or not allowed deletion attribute [" + attribute + "].");
@@ -547,7 +559,7 @@ public class UserDirectory {
 		mods[0] = new ModificationItem(DirContext.REMOVE_ATTRIBUTE, delAttr);	
 		
 		try {
-			dirctx.modifyAttributes("uid=" + username + ",ou=user,dc=yggdrasil,dc=com", mods);
+			dirctx.modifyAttributes("uid=" + userId + ",ou=user,dc=yggdrasil,dc=com", mods);
 			logger.debug("attribute " + attribute + " is deleted successfully.");
 		} catch(NoSuchAttributeException excp) {
 			logger.debug("no attribute " + attribute);
