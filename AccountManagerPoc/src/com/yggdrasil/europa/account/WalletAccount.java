@@ -80,43 +80,50 @@ public class WalletAccount {
 		
 		udbEntity = new UserDatabaseEntity();
 		
-		udbEntity.username = waEntity.username;
-		udbEntity.firstname = waEntity.firstname;
-		udbEntity.lastname = waEntity.lastname;
-		udbEntity.middlename = waEntity.middlename;
-		udbEntity.title = waEntity.title;
-		udbEntity.dateOfBirth = waEntity.dateOfBirth;
-		udbEntity.gender = waEntity.gender;
-		udbEntity.citizenId = waEntity.citizenId;
-		udbEntity.citizenIdType = waEntity.citizenIdType;
-		udbEntity.mobile = waEntity.mobile;
-		udbEntity.email = waEntity.email;
-		udbEntity.alternateEmail = waEntity.alternateEmail;
-		udbEntity.postalAddress = waEntity.postalAddress;
-		udbEntity.city = waEntity.city;
-		udbEntity.zipcode = waEntity.zipcode;
-		udbEntity.country = waEntity.country;
-		udbEntity.homePhone = waEntity.homePhone;
-		udbEntity.company = waEntity.company;
-		udbEntity.officeAddress = waEntity.officeAddress;
-		udbEntity.officePhone = waEntity.officePhone;
-		udbEntity.type = waEntity.type;
-		udbEntity.status = waEntity.status;
-		udbEntity.directoryRole = waEntity.directoryRole;	
+		udbEntity.username = waEntity.getUsername();
+		udbEntity.firstname = waEntity.getFirstname();
+		udbEntity.lastname = waEntity.getLastname();
+		udbEntity.middlename = waEntity.getMiddlename();
+		udbEntity.title = waEntity.getTitle();
+		udbEntity.dateOfBirth = waEntity.getDateOfBirth();
+		udbEntity.gender = waEntity.getGender();
+		udbEntity.citizenId = waEntity.getCitizenId();
+		udbEntity.citizenIdType = waEntity.getCitizenIdType();
+		udbEntity.mobile = waEntity.getMobile();
+		udbEntity.email = waEntity.getEmail();
+		udbEntity.alternateEmail = waEntity.getAlternateEmail();
+		udbEntity.postalAddress = waEntity.getPostalAddress();
+		udbEntity.city = waEntity.getCity();
+		udbEntity.zipcode = waEntity.getZipcode();
+		udbEntity.country = waEntity.getCountry();
+		udbEntity.homePhone = waEntity.getHomePhone();
+		udbEntity.company = waEntity.getCompany();
+		udbEntity.officeAddress = waEntity.getOfficeAddress();
+		udbEntity.officePhone = waEntity.getOfficePhone();
+		udbEntity.type = waEntity.getType();
+		udbEntity.status = waEntity.getStatus();
+		udbEntity.directoryRole = waEntity.getDirectoryRole();	
 		
 		UserDatabase udb;
 		
 		try {
 			udb = UserDatabaseFactory.getUserDatabase();
 			
-			waEntity.accountId = udb.createUser(udbEntity);
-			
-			if(waEntity.accountId <= 0) {
+			int accountId = udb.createUser(udbEntity);
+			if(accountId <= 0) {
+				// create in database failed.
+				udb.rollback();
+				
 				logger.debug("create a new user in database failed.");
+				
 				return(false);
+				
 			} else {
 				logger.debug("create a new user in database success");
 			}
+			
+			waEntity.setAccountId(accountId);
+			
 		} catch(DatabaseConnectionException e) {
 			logger.error(e.getMessage());
 			logger.debug(e, e);
@@ -126,15 +133,15 @@ public class WalletAccount {
 		UserDirectoryEntity udirEntity;
 		
 		udirEntity = new UserDirectoryEntity();
-		udirEntity.userId = Integer.toString(waEntity.accountId);
-		udirEntity.username = waEntity.username;
-		udirEntity.password = waEntity.password;
-		udirEntity.email = waEntity.email;
+		udirEntity.userId = Integer.toString(waEntity.getAccountId());
+		udirEntity.username = waEntity.getUsername();
+		udirEntity.password = waEntity.getPassword();
+		udirEntity.email = waEntity.getEmail();
 		
-		udirEntity.firstname = waEntity.firstname;
-		udirEntity.lastname = waEntity.lastname;
-		udirEntity.role = waEntity.role;
-		udirEntity.description = waEntity.description;
+		udirEntity.firstname = waEntity.getFirstname();
+		udirEntity.lastname = waEntity.getLastname();
+		udirEntity.role = waEntity.getRole();
+		udirEntity.description = waEntity.getDescription();
 		
 		UserDirectory udir;
 		
@@ -143,6 +150,9 @@ public class WalletAccount {
 		} catch (DirectoryConnectionException e) {
 			logger.error(e.getMessage());
 			logger.debug(e, e);
+			
+			udb.rollback();
+			
 			return false;
 		}
 		
@@ -151,8 +161,10 @@ public class WalletAccount {
 			//logger.debug("remove account[" + accountId + "] from database due to user creation failure in directory.");
 			//udb.deleteUser(accountId);
 			
-			logger.debug("rollback account[" + waEntity.accountId + "] due to user creation failure in directory.");
+			logger.debug("rollback account[" + waEntity.getAccountId() + "] due to user creation failure in directory.");
+			
 			udb.rollback();
+			
 			return false;
 		}
 		
@@ -162,6 +174,10 @@ public class WalletAccount {
 		return true;
 	}
 	
+	public boolean createWallettoAccount(int aid) {
+		
+		return false; 
+	}
 	public boolean changeCapSet() {
 		// verify session token and role
 		return false;

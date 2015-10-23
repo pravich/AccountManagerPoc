@@ -157,12 +157,24 @@ public class UserDatabase {
 			if(rs.next()) {
 				accountId = rs.getInt(1);
 			} else {
-				conn.rollback();
+				// conn.rollback();
 			}
 			
 			// not commit until user creation in directory is done. 
 			// conn.commit();
 			
+			
+			int walletId = createWallet(accountId);
+			if(walletId < 0) {
+				// conn.rollback();
+				return -1;
+			}
+			
+			int capsetId = createCapSet(walletId);
+			if(capsetId < 0) {
+				// conn.rollback();
+				return -1;
+			}
 		} catch(SQLException e) {
 			logger.error(e.getMessage());
 			logger.debug(e, e);
@@ -186,6 +198,11 @@ public class UserDatabase {
 			logger.debug(e, e);
 			return false;
 		}
+		// Todo
+		// Delete wallet entity and capset entity
+		// Delete directory entity
+		// Transactional process
+		
 		return true;
 	}
 	
@@ -358,4 +375,83 @@ public class UserDatabase {
 		return (new String(chResult)).trim();
 	}
 
+	public int createWallet(int accountId) {		
+		String cmdInsert = "INSERT INTO wallet ("
+				+ "   account_aid"	//  1
+				+ " , available"	//  2
+				+ " , current"	 	//  3
+				+ " , pending"		//  4
+				+ " , currency"		//  5
+				+ " , type"			//  6
+				+ " , status"		//  7
+				+ " , mtime"		//  8
+				+ " , ctime) "		//  9
+				+ " VALUES( ?, 0.0000, 0.0000, 0.0000, 1, 1, 'ACTIVE', NOW(), NOW() )";
+		
+		PreparedStatement pstmt = null;
+		int walletId = -1;
+		
+		try {	
+			pstmt = conn.prepareStatement(cmdInsert, Statement.RETURN_GENERATED_KEYS);
+			pstmt.setInt( 1 , accountId);
+
+			pstmt.executeUpdate();
+			
+			ResultSet rs = pstmt.getGeneratedKeys();
+			if(rs.next()) {
+				walletId = rs.getInt(1);
+			} else {
+				// conn.rollback();
+			}
+			
+			// not commit until user creation in directory is done. 
+			// conn.commit();
+			
+		} catch(SQLException e) {
+			logger.error(e.getMessage());
+			logger.debug(e, e);
+		}
+		
+		return walletId;
+	}
+	
+	public int createCapSet(int walletId) {
+//		INSERT INTO capset (wallet_wid, amount_limit, daily_transfer_limit, type, status, mtime, ctime) 
+//		VALUE(1, 50000.0000, 20000.0000, 1, 'ACTIVE', NOW(), NOW());
+		
+		String cmdInsert = "INSERT INTO capset ("
+				+ "   wallet_wid"
+				+ " , amount_limit"
+				+ " , daily_transfer_limit"
+				+ " , type"
+				+ " , status"
+				+ " , mtime"
+				+ " , ctime)"
+				+ " VALUES ( ?, 50000.0000, 20000.0000, 1, 'ACTIVE', NOW(), NOW())";
+		
+		PreparedStatement pstmt = null;
+		int capsetId = -1;
+		
+		try {	
+			pstmt = conn.prepareStatement(cmdInsert, Statement.RETURN_GENERATED_KEYS);
+			pstmt.setInt( 1 , walletId);
+
+			pstmt.executeUpdate();
+			
+			ResultSet rs = pstmt.getGeneratedKeys();
+			if(rs.next()) {
+				capsetId = rs.getInt(1);
+			} else {
+				// conn.rollback();
+			}
+			
+			// not commit until user creation in directory is done. 
+			// conn.commit();
+			
+		} catch(SQLException e) {
+			logger.error(e.getMessage());
+			logger.debug(e, e);
+		}
+		return capsetId;
+	}
 }
