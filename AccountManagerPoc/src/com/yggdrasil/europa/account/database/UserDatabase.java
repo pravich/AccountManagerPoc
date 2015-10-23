@@ -170,11 +170,12 @@ public class UserDatabase {
 				return -1;
 			}
 			
-			int capsetId = createCapSet(walletId);
-			if(capsetId < 0) {
-				// conn.rollback();
-				return -1;
-			}
+			
+//			int capsetId = createCapSet(walletId);
+//			if(capsetId < 0) {
+//				// conn.rollback();
+//				return -1;
+//			}
 		} catch(SQLException e) {
 			logger.error(e.getMessage());
 			logger.debug(e, e);
@@ -377,16 +378,17 @@ public class UserDatabase {
 
 	public int createWallet(int accountId) {		
 		String cmdInsert = "INSERT INTO wallet ("
-				+ "   account_aid"	//  1
-				+ " , available"	//  2
-				+ " , current"	 	//  3
-				+ " , pending"		//  4
-				+ " , currency"		//  5
-				+ " , type"			//  6
-				+ " , status"		//  7
-				+ " , mtime"		//  8
-				+ " , ctime) "		//  9
-				+ " VALUES( ?, 0.0000, 0.0000, 0.0000, 1, 1, 'ACTIVE', NOW(), NOW() )";
+				+ "   account_aid"			//  1
+				+ " , master_capset_mcsid"	//  2
+				+ " , available"			//  3
+				+ " , current"	 			//  4
+				+ " , pending"				//  5
+				+ " , currency"				//  6
+				+ " , type"					//  7
+				+ " , status"				//  8
+				+ " , mtime"				//  9
+				+ " , ctime) "				// 10
+				+ " VALUES( ?, 1, 0.0000, 0.0000, 0.0000, 1, 1, 'ACTIVE', NOW(), NOW() )";
 		
 		PreparedStatement pstmt = null;
 		int walletId = -1;
