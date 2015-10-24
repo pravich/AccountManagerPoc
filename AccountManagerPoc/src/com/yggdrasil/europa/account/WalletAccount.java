@@ -249,4 +249,8 @@ public class WalletAccount {
 		
 		return true;
 	}
+	
+	public boolean transfer(int sourceWallet, int targetWallet) {
+		return false;
+	}
 }
