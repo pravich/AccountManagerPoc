@@ -185,24 +185,21 @@ public class UserDatabase {
 	}
 	
 	public boolean deleteUser(int accountId) {
-		String cmdDelete = "DELETE FROM account WHERE aid = " +  accountId + ";";
-		Statement stmt;
-		
 		try {
+			Statement stmt;
 			stmt = conn.createStatement();
-			stmt.execute(cmdDelete);
 			
-			conn.commit();
+			String cmdDelete = "DELETE FROM wallet WHERE account_aid=" + accountId +";";
+			stmt.executeQuery(cmdDelete);
+			
+			cmdDelete = "DELETE FROM account WHERE aid = " +  accountId + ";";
+			stmt.executeQuery(cmdDelete);
 			
 		} catch (SQLException e) {
 			logger.error(e.getMessage());
 			logger.debug(e, e);
 			return false;
 		}
-		// Todo
-		// Delete wallet entity and capset entity
-		// Delete directory entity
-		// Transactional process
 		
 		return true;
 	}
@@ -254,10 +251,10 @@ public class UserDatabase {
 	
 	public int getAccountIdByEmail(String email) {
 		int accountId = -1;
-		String query = "SELECT aid FROM account WHERE email='" + email + "';";
+		String cmdQuery = "SELECT aid FROM account WHERE email='" + email + "';";
 		try {
 			Statement stmt = conn.createStatement();
-			ResultSet rs = stmt.executeQuery(query);
+			ResultSet rs = stmt.executeQuery(cmdQuery);
 			
 			if(rs.next()) {
 				accountId = rs.getInt(1);
@@ -271,10 +268,10 @@ public class UserDatabase {
 	
 	public int getAccountIdByMobile(String mobile) {
 		int accountId = -1;
-		String query = "SELECT aid FROM account WHERE mobile_number='" + mobile + "';";
+		String cmdQuery = "SELECT aid FROM account WHERE mobile_number='" + mobile + "';";
 		try {
 			Statement stmt = conn.createStatement();
-			ResultSet rs = stmt.executeQuery(query);
+			ResultSet rs = stmt.executeQuery(cmdQuery);
 			
 			if(rs.next()) {
 				accountId = rs.getInt(1);

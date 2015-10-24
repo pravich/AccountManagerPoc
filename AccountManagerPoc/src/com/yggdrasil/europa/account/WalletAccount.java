@@ -174,10 +174,56 @@ public class WalletAccount {
 		return true;
 	}
 	
-	public boolean createWallettoAccount(int aid) {
+	public boolean createWallettoAccount(int accountId) {
 		
 		return false; 
 	}
+	
+	public boolean deleteAccount(String genericId) {
+		int accountId = -1;
+		UserDatabase udb;
+		UserDirectory udir;
+		
+		try {
+			udb = UserDatabaseFactory.getUserDatabase();
+		} catch (DatabaseConnectionException e) {
+			logger.error(e.getMessage());
+			logger.debug(e, e);
+			return false;
+		}
+		
+		if(isEmail(genericId)) {
+			accountId = udb.getAccountIdByEmail(genericId);
+			logger.debug("signon with email=[" + genericId + "] matches to accountId=[" + accountId + "]");
+		} else if(isMobile(genericId)) {
+			accountId = udb.getAccountIdByMobile(genericId);
+			logger.debug("signon with mobile=[" + genericId + "] matches to accountId=[" + accountId + "]");
+		} else {
+			accountId = udb.getAccountIdByUsername(genericId);
+			logger.debug("signon with username=[" + genericId + "] matches to accountId=[" + accountId + "]");
+		}
+		
+		if(!udb.deleteUser(accountId)) {
+			udb.rollback();
+			logger.debug("cannot delete account[" + accountId + "].");
+			return false;
+		}
+		
+		try {
+			udir = UserDirectoryFactory.getUserDirectory();
+			udir.deleteUser(Integer.toString(accountId));
+		} catch (DirectoryConnectionException e) {
+			logger.error(e.getMessage());
+			logger.debug(e, e);
+			
+			udb.rollback();
+			return false;
+		}
+		
+		udb.commit();
+		return true;
+	}
+	
 	public boolean changeCapSet() {
 		// verify session token and role
 		return false;
